@@ -124,3 +124,39 @@ Answering mode `0x10` with the normal keymap made every key show a modifier badg
 of the colours is not confirmed yet.
 
 All screenshots in this folder have PNG metadata chunks (eXIf, iTXt, iCCP) removed.
+
+## Session 3, continued: firmware update A2.48 → A2.49 (to the virtual device only)
+
+File: `HHKB820_FW_JP_A249.hfb` (282,672 B, SHA-256 `4978c459…3af9634e`). It is listed only on PFU's **Japanese**
+download page (https://happyhackingkb.com/jp/download/); the English page lists only the US `HHKB800_FW_A048.hfb`.
+Firmware files are not committed (see `.gitignore`).
+
+The tool first checks that the file's model ID matches the keyboard. The US file was rejected ("This firmware data
+cannot be applied to this model") without anything being sent.
+
+Sequence:
+
+```
+01 → 02 → 05 → 06            checkSameKeyboard
+E0                           FirmupModeChange (a real keyboard would switch to its bootloader here)
+E1 30 50 04 00 24 41         FirmupStart: image size LE32 (0x45030 = 282,672) + first 2 bytes of the .hfb
+E2 × 4960                    "aa aa e2 00 <len> <block LE16> <data>", 57 data bytes per block (last block 7)
+E3                           FirmupEnd
+```
+
+Every E2 is answered `55 55 e2 00 00 02 <2 bytes>`; the tool accepted any value in those 2 bytes. 4960 blocks took
+about 67 s.
+
+**The concatenated E2 data is exactly the .hfb file minus its first 2 bytes.** `.hfb` layout:
+
+| Offset | Content |
+|---|---|
+| 0–1 | `24 41`, sent in E1 (probably a checksum; not plain sum16 or CRC-16/CCITT) |
+| 2–3 | `d4 db`, sent as the first data bytes |
+| 4– | **plain, unencrypted ARM Cortex-M image**: initial SP `0x200024F0`, reset `0x080100D5`, so the app is linked at `0x08010000` (STM32-style flash, 64 KB bootloader below) |
+| end | `ff…` padding, then `"AHJX01\n"` (model ID; the tool logs `appliableKeyboard: AHJX01`) + version `0a 02 04 09` (= A2.49) |
+
+After E3 the tool sent nothing more and showed "Writing is complete". The user reports that the real HHKB Hybrid
+behaved the same: no restart or reconnect. So the update runs without USB re-enumeration: either the application
+firmware programs flash itself, or the bootloader keeps the same USB identity. `E0` is acked like any other command,
+and nothing visible happens on the bus. The responder now reports the uploaded version on the next GetKeyboardInformation.

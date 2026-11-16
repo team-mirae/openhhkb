@@ -25,7 +25,7 @@ def ascii_field(s, n):
     return s.encode("ascii")[:n].ljust(n, b"\x00")
 
 
-def keyboard_info():
+def keyboard_info(state):
     # Offsets are from the reply start, as parsed by HHKBDriver.command02GetKeyboardInformation():
     #   6..26 type number (string), 26..30 revision (string), 30..46 serial (string),
     #   46..50 app firmware version, 54..58 boot firmware version (UInt8ToVersion), 62 running firmware state.
@@ -36,7 +36,7 @@ def keyboard_info():
     b[30:46] = ascii_field("VHHKB0000000001", 16)
     # Version bytes print as "%X%x.%x%x": 0A 02 04 08 -> "A2.48". Latest for PD-KB820BS on PFU's update
     # server (HHKBVersion.json, 2026-11-16) is A2.49, so the tool should offer an update.
-    b[46:50] = bytes([0x0A, 0x02, 0x04, 0x08])
+    b[46:50] = state.get("app_version", bytes([0x0A, 0x02, 0x04, 0x08]))
     b[54:58] = bytes([0x0A, 0x01, 0x00, 0x00])
     b[62] = 0x00
     return bytes(b)
@@ -63,7 +63,7 @@ def handle(iface, data, state):
     if cmd == 0x01:  # NotifyApplicationState
         return [(iface, reply(0x01))]
     if cmd == 0x02:  # GetKeyboardInformation
-        return [(iface, keyboard_info())]
+        return [(iface, keyboard_info(state))]
     if cmd == 0x04:  # ConfirmKeymap
         return [(iface, reply(0x04))]
     if cmd == 0x05:  # GetDipswInformation: 12 bytes
@@ -100,13 +100,19 @@ def handle(iface, data, state):
             state["fw_start"] = bytes(payload)
             fw.clear()
         elif cmd == 0xE2:
-            fw.extend(data[4:])  # framing of E2 not known yet: keep everything after "aa aa e2 00"
-            # Static analysis: the tool expects "55 55 e2 00 00 02" + 2 bytes. Guess: echo the block number.
-            return [(iface, reply(0xE2, bytes(data[4:6])))]
+            fw.extend(data[7:5 + n])  # skip "aa aa e2 00 <len>" and the 2-byte block number
+            # The tool expects "55 55 e2 00 00 02" + 2 bytes; it accepted any value there. Echo the block number.
+            return [(iface, reply(0xE2, bytes(data[5:7])))]
         elif cmd == 0xE3:
-            out = FACTORY.parent / "captures" / f"firmware-upload-{len(fw)}B.bin"
+            # Upload framing (captured 2026-11-16): E2 = "aa aa e2 00 <len> <block LE16> <len-2 data bytes>",
+            # the concatenated data is the .hfb file minus its first 2 bytes (those go in E1 after the size).
+            # The image ends with "<model id> 0a <version 4 B>", e.g. "AHJX01\n" 0a 02 04 09 = A2.49.
+            out = FACTORY.parent / "captures" / f"firmware-upload-{len(fw)}B.bin"  # git-ignored (vendor binary)
             out.write_bytes(bytes(fw))
-            print(f"=== wrote {out.name}")
+            tail = bytes(fw).rstrip(b"\x00").rstrip(b"\xff")
+            if len(tail) >= 4:
+                state["app_version"] = tail[-4:]  # pretend the flash succeeded: report the new version
+            print(f"=== wrote {out.name}; now reporting version {state.get('app_version', b'').hex()}")
         return [(iface, reply(cmd))]
     print(f"??? unknown command {cmd:#04x}")
     return []

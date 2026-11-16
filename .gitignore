@@ -1,0 +1,3 @@
+# Vendor firmware images: never commit
+*.hfb
+analysis/**/firmware-upload-*.bin
