@@ -3,3 +3,4 @@
 analysis/**/firmware-upload-*.bin
 firmware/*
 !firmware/README.md
+firmware-src/build/
