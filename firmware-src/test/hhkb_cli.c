@@ -5,6 +5,7 @@
  *   RESET     re-init device and clear the firmware buffer
  */
 #include "hhkb_proto.h"
+#include "hfb_crc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,6 +44,16 @@ int main(void) {
             fw_max = 0;
             memset(fw_buf, 0, sizeof(fw_buf));
             printf("ok\n");
+            fflush(stdout);
+            continue;
+        }
+        if (!strncmp(line, "CRCFILE ", 8)) {
+            FILE *f = fopen(line + 8, "rb");
+            if (!f) { printf("ERR\n"); fflush(stdout); continue; }
+            static uint8_t fb[400000];
+            size_t n = fread(fb, 1, sizeof(fb), f);
+            fclose(f);
+            printf("%04x\n", n >= 2 ? hfb_crc16(fb + 2, n - 2) : 0); /* CRC over file[2:] */
             fflush(stdout);
             continue;
         }

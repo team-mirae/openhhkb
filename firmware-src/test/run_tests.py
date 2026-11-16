@@ -178,6 +178,20 @@ def test_descriptors():
     check(ok, "HID wDescriptorLength matches each report descriptor")
 
 
+def test_crc(core):
+    print("[6] .hfb CRC-16 matches vendor images (C implementation)")
+    fw = ROOT / "firmware"
+    files = sorted(fw.glob("*.hfb"))
+    if not files:
+        print("  skip  no vendor .hfb present")
+        return
+    for f in files:
+        d = f.read_bytes()
+        stored = d[0] | (d[1] << 8)
+        got = core.cmd(f"CRCFILE {f}")
+        check(int(got, 16) == stored, f"{f.name}: C CRC {got} == stored {stored:04x}")
+
+
 def main():
     if not CLI.exists():
         print("build hhkb_cli first (make -C firmware-src test)"); sys.exit(2)
@@ -187,6 +201,7 @@ def main():
     test_default(core)
     test_firmware(core)
     test_descriptors()
+    test_crc(core)
     print()
     if fails:
         print(f"{len(fails)} FAILURE(S):")
