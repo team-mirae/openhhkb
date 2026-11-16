@@ -36,20 +36,18 @@ int main(int argc, char **argv) {
     int iface = atoi(argv[3]);
 
     setbuf(stdout, NULL);
-    fprintf(stderr, "dbg: starting, opening %04x:%04x iface %d\n", vid, pid, iface);
     if (hid_init()) {
         printf("ERR hid_init\n");
         return 1;
     }
     struct hid_device_info *devs = hid_enumerate(vid, pid), *d;
     char path[512] = {0};
-    const wchar_t *pname = L"";
-    for (d = devs; d; d = d->next)
+    for (d = devs; d; d = d->next) {
         if (d->interface_number == iface) {
             strncpy(path, d->path, sizeof(path) - 1);
-            pname = d->product_string ? d->product_string : L"";
             break;
         }
+    }
     if (!path[0]) {
         printf("ERR device %04x:%04x iface %d not found\n", vid, pid, iface);
         return 1;
@@ -61,7 +59,7 @@ int main(int argc, char **argv) {
         return 1;
     }
     hid_set_nonblocking(dev, 1);
-    printf("READY %ls\n", pname);
+    printf("READY\n");
     fflush(stdout);
 
     char line[4096];
@@ -86,7 +84,7 @@ int main(int argc, char **argv) {
                 }
                 int w = hid_write(dev, out, 65);
                 if (w < 0) {
-                    printf("ERR write %ls\n", hid_error(dev));
+                    printf("ERR write\n");
                     fflush(stdout);
                 }
             }
@@ -98,7 +96,7 @@ int main(int argc, char **argv) {
             printf("\n");
             fflush(stdout);
         } else if (r < 0) {
-            printf("ERR read %ls\n", hid_error(dev));
+            printf("ERR read\n");
             fflush(stdout);
             break;
         }

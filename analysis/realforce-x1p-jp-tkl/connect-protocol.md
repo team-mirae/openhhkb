@@ -82,3 +82,24 @@ blocked by the passthrough guard, so the real keyboard is never written.
 
 Note: repeatedly opening/closing the real keyboard's vendor interface makes macOS's `hid_open` flaky until the
 keyboard is replugged; this is a device/OS quirk, not a protocol issue.
+
+## Firmware-update attempt against the real keyboard (blocked)
+
+With the passthrough reporting an older version (A1.00 via the `0x02` rewrite), CONNECT enabled and triggered the
+firmware update against the real X1P: it sent `E0` (enterFirmwareUpdateMode), which the guard **blocked** (synthetic
+ack, nothing sent to the keyboard). It then stalled because `updateFirmware(file)` only runs `E1/E2/E3` when a
+firmware file is actually selected; with no file it returns immediately.
+
+Decisive finding from `setFirmwareUpdateData` — CONNECT validates a selected `.rfb` with **our exact CRC**:
+
+```js
+d = p.slice(2); if (calcCRC(d) !== <stored CRC at p[0:2]>) throw "FW CRC mismatch";
+// + model check (footer, '#' stripped) and version check (file version >= installed)
+```
+
+`calcCRC` is bit-identical to `firmware-src/src/hfb_crc.h`. So a custom `.rfb` carrying our CRC passes CONNECT's own
+file validation; reporting an older installed version (A1.00) lets a real-version file through the version gate.
+Net: the firmware workaround is confirmed against CONNECT end to end, and the guard kept the real keyboard unwritten.
+
+Bridge note: the host bridge must not print the wide product name (`%ls`) on its stdout line protocol — it emits a
+control byte that corrupts the stream and looks like the device "failing to open". Fixed in `hidbridge.c`.
