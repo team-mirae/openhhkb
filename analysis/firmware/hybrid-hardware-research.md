@@ -38,6 +38,17 @@ Inferred from an FCC-ID lead, **weaker** than the MCU evidence.
 - `.hfb` container: 2-byte **CRC-16** header (reflected, poly `0x8408`, over `file[2:]`) — this part **is** verified
   (`hfb-checksum.md`). Plain unencrypted ARM image; `AHJX01` model-ID + version footer.
 
+## Update: emulation + multi-part container
+
+- **Emulation confirms STM32F0 (family).** `tools/fw-emu/emu.py` runs the firmware's Cortex-M0 image under Unicorn;
+  its clock/flash init executes correctly against STM32F0 RCC (`0x40021000`) and FLASH (`0x40022000`) and boots
+  into the main loop. So the main-MCU *family* (STM32F0) is now confirmed by running the code; the exact part
+  (F070 vs F072, flash/RAM size) is still unconfirmed.
+- **The `.hfb` is a multi-part container (~282 KB).** That is far larger than a 64 KB app or a 128 KB F0 flash, so
+  the file bundles several firmwares — the main STM32F0 app (first chunk, reset `0x080100d5`) plus, almost
+  certainly, the nRF52832 Bluetooth firmware and likely the touchpad. This corroborates the separate-BT-MCU theory
+  and the Studio tool's separate BT/TP firmware commands.
+
 ## How to confirm
 
 1. Open a Hybrid; read the two main chip silkscreens (main MCU + radio module).

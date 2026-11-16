@@ -9,6 +9,7 @@ keyboard by default; the work has stayed read-only / emulated (see the repo's gr
 | [`vhhkb/`](vhhkb/) | Virtual HID keyboard: creates `IOHIDUserDevice`s inside a throwaway VM so an official tool talks to a fake keyboard. Driven over a line protocol. |
 | [`responder/`](responder/) | Host-side driver for `vhhkb`: presents a device profile, logs every report, and answers with hot-reloaded per-device reply rules. |
 | [`passthrough/`](passthrough/) | Logging HID passthrough: an official tool in the VM talks to the **real** keyboard on the host, every report logged, with writes/firmware-flash blocked by default. |
+| [`fw-emu/`](fw-emu/) | Emulate the Hybrid's STM32F0 main MCU under Unicorn and run the firmware image, for tracing/analysis (no USB or Topre models — not a working keyboard). |
 
 Typical setups:
 
