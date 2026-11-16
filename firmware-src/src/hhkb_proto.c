@@ -1,7 +1,26 @@
 /* openhhkb clean-room firmware: portable config-protocol core. See hhkb_proto.h. */
 #include "hhkb_proto.h"
 #include "default_keymap.h"
-#include <string.h>
+
+/* Freestanding: no libc, so the core carries its own tiny mem/str helpers. */
+static void *kmemcpy(void *d, const void *s, size_t n) {
+    uint8_t *dd = d;
+    const uint8_t *ss = s;
+    while (n--) *dd++ = *ss++;
+    return d;
+}
+static void *kmemset(void *d, int c, size_t n) {
+    uint8_t *dd = d;
+    while (n--) *dd++ = (uint8_t)c;
+    return d;
+}
+static void kstrncpy(char *d, const char *s, size_t n) {
+    size_t i = 0;
+    for (; i < n && s[i]; i++) d[i] = s[i];
+    for (; i < n; i++) d[i] = 0;
+}
+#define memcpy kmemcpy
+#define memset kmemset
 
 /* ---- helpers ------------------------------------------------------------ */
 
@@ -39,9 +58,9 @@ static uint8_t *layer_ptr(hhkb_device_t *d, uint8_t mode, uint8_t fn) {
 void hhkb_device_init(hhkb_device_t *d) {
     memset(d, 0, sizeof(*d));
     /* Identity matches the PD-KB820BS (JIS) we captured, so the JIS keymap tool accepts us. */
-    strncpy(d->type_number, "PD-KB820BS", sizeof(d->type_number) - 1);
-    strncpy(d->revision, "A", sizeof(d->revision) - 1);
-    strncpy(d->serial, "OPENHHKB0000001", sizeof(d->serial) - 1);
+    kstrncpy(d->type_number, "PD-KB820BS", sizeof(d->type_number));
+    kstrncpy(d->revision, "A", sizeof(d->revision));
+    kstrncpy(d->serial, "OPENHHKB0000001", sizeof(d->serial));
     /* Report an old app version (A2.00) so a current keymap tool offers an update. */
     d->app_version[0] = 0x0A; /* 'A' */
     d->app_version[1] = 0x02;
@@ -149,6 +168,11 @@ int hhkb_handle_report(hhkb_device_t *d, const uint8_t *req, size_t req_len, uin
     }
     case HHKB_CMD_FW_MODE: {
         reply_hdr(reply_slot(replies, 0), cmd, 0x00, 0x00);
+        if (d->enter_bootloader) {
+            d->enter_bootloader(d->fw_ctx); /* does not return on target */
+            return 1;
+        }
+        d->fw_active = 1; /* host: receive the update ourselves */
         return 1;
     }
     case HHKB_CMD_FW_START: {

@@ -68,6 +68,10 @@ typedef struct {
     /* flash sink: target writes to real flash; host test just counts/captures. */
     void (*fw_sink)(void *ctx, uint32_t off, const uint8_t *data, uint16_t len);
     void (*fw_commit)(void *ctx); /* FW_END: verify + activate */
+    /* On target, FW_MODE (E0) jumps to the resident vendor bootloader at 0x08000000, which
+     * then receives E1/E2/E3 and flashes (no USB re-enumeration). If NULL (host tests), the
+     * core instead receives the update itself so it can be reassembled/verified. */
+    void (*enter_bootloader)(void *ctx);
     void *fw_ctx;
 } hhkb_device_t;
 

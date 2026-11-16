@@ -17,7 +17,10 @@ in the git-ignored `firmware/` directory and are only used as test fixtures.
 | Default keymap (`src/default_keymap.h`, generated) | done (A S D F → H H K B; Z `/` `\` kept) |
 | Firmware-update receiver (reassembles an uploaded `.hfb`) | done in the core; self-flash to real flash: TODO |
 | Host test suite (`test/`) | done — replays captures, round-trips keymaps, reassembles the vendor image |
-| STM32F0 target: startup, linker, USB FS device, HID | TODO |
+| STM32F0 target build (startup, linker, image) | done — `make fw` builds `hhkb_fw.bin` at `0x08010000` |
+| Core verified on real Cortex-M0 (QEMU) | done — `make qemu` runs the core under `qemu-system-arm` |
+| STM32F0 USB FS device stack + HID | TODO (board layer stubbed) |
+| Topre matrix scanning (so it can type) | blocked — needs the physical board; see hardware-id.md |
 | `.hfb` header checksum (so the stock bootloader accepts our image) | TODO (open item) |
 | Studio (different MCU + `MAIN` container + boot-mode) | not started |
 
@@ -34,9 +37,14 @@ test/run_tests.py      host tests (see below)
 ## Build & test
 
 ```
-make test     # builds the host CLI and runs the suite
-make gen      # regenerate default_keymap.h
+make test     # host: build the CLI and run the protocol suite
+make fw        # cross-build the STM32F0 image (build/hhkb_fw.bin at 0x08010000)
+make qemu      # run the core on a Cortex-M0 under QEMU (microbit), semihosting output
+make gen       # regenerate default_keymap.h
 ```
+
+Toolchain: `arm-none-eabi-gcc` + `qemu-system-arm` (`brew install arm-none-eabi-gcc qemu`). The core is
+freestanding (no libc), so it links into the firmware with no runtime.
 
 The suite (`test/run_tests.py`) checks:
 1. **structural replay** — every captured tool→device report produces the reply header the real tool accepted;
