@@ -53,6 +53,13 @@ def factory_keymap(mode_fn):
     return bytes.fromhex(f["fn"] if mode_fn[1:2] == b"\x01" else f["standard"])
 
 
+def redact(iface, data):
+    """Keep vendor firmware out of capture logs: drop the data bytes of E2 (firmware block) packets."""
+    if iface == VENDOR_IF and data[:3] == b"\xaa\xaa\xe2":
+        return bytes(data[:7])
+    return data
+
+
 def handle(iface, data, state):
     if iface != VENDOR_IF or len(data) < 5 or data[0:2] != b"\xaa\xaa":
         return []

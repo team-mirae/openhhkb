@@ -104,8 +104,9 @@ def main():
             f = line.rstrip("\n").split("\t")
             if f[0] == "OUT":
                 iface, rtype, rid, data = int(f[1]), int(f[2]), int(f[3]), bytes.fromhex(f[4] if len(f) > 4 else "")
-                record("out", iface, data, type=rtype, id=rid)
                 mod = rules.get()
+                logged = mod.redact(iface, data) if mod and hasattr(mod, "redact") else data
+                record("out", iface, logged, type=rtype, id=rid, **({"redacted": True} if logged != data else {}))
                 try:
                     replies = mod.handle(iface, data, rules.state) if mod else []
                 except Exception as e:
