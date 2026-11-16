@@ -8,3 +8,7 @@ firmware-src/build/
 # Passthrough captures contain the user's real keyboard config
 analysis/**/*-passthrough.jsonl
 tools/passthrough/hidbridge
+
+# Rust build output
+/cli/target/
+target/
