@@ -1,0 +1,10 @@
+                    RealForce Compact:
+
+                      Location ID: 0x00113200
+                      Connection Type: Removable
+                      Manufacturer: Topre Corporation
+                      Serial Number: Not Provided
+                      Link Speed: 12 Mb/s
+                      USB Vendor ID: 0x0853
+                      USB Product ID: 0x0200
+                      USB Product Version: 0x0102

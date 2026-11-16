@@ -1,0 +1,11 @@
+                REALFORCE X1P JP TKL:
+
+                  Location ID: 0x00143000
+                  Connection Type: Removable
+                  Manufacturer: Topre
+                  Serial Number: Not Provided
+                  Link Speed: 480 Mb/s
+                  USB Vendor ID: 0x0853
+                  USB Product ID: 0x0322
+                  USB Product Version: 0x0001
+                  Power Allocated: 2.5 W (500 mA)
