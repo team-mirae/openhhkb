@@ -14,10 +14,6 @@ An open-source hardware remapper for the **HHKB Studio** and **HHKB Professional
 
 This project is based on reverse engineering of the keyboards' configuration protocol. It is experimental, very risky, and **not recommended for normal users**. Nothing here is stable yet.
 
-## License
-
-[CC0 1.0 Universal](LICENSE) — dedicated to the public domain.
-
 ## Official tools
 
 For everyday use, use the official remap tool:
@@ -26,3 +22,7 @@ For everyday use, use the official remap tool:
 - **HHKB Professional Hybrid Type-S:** [HHKB Professional Keymap Tool](https://happyhackingkb.com/download/)
 
 Both are available for Windows and macOS on the official download page. The two keyboards use different tools.
+
+## License
+
+[CC0 1.0 Universal](LICENSE) — dedicated to the public domain.
