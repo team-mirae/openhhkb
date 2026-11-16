@@ -6,6 +6,9 @@ Everything below is a guess to be refined against the tool's behaviour. Edit fre
 this file on every change.
 """
 
+import json
+import pathlib
+
 VENDOR_IF = 2
 SIZE = 64
 
@@ -31,10 +34,23 @@ def keyboard_info():
     b[6:26] = ascii_field("PD-KB820BS", 20)
     b[26:30] = ascii_field("A", 4)
     b[30:46] = ascii_field("VHHKB0000000001", 16)
-    b[46:50] = bytes([1, 0, 0, 0])
-    b[54:58] = bytes([1, 0, 0, 0])
+    # Version bytes print as "%X%x.%x%x": 0A 02 04 08 -> "A2.48". Latest for PD-KB820BS on PFU's update
+    # server (HHKBVersion.json, 2026-11-16) is A2.49, so the tool should offer an update.
+    b[46:50] = bytes([0x0A, 0x02, 0x04, 0x08])
+    b[54:58] = bytes([0x0A, 0x01, 0x00, 0x00])
     b[62] = 0x00
     return bytes(b)
+
+
+FACTORY = pathlib.Path(__file__).resolve().parents[3] / "analysis/hhkb-hybrid-jis/factory-keymap.json"
+
+
+def factory_keymap(mode_fn):
+    """Factory default captured from the tool's factory reset; mode 0 only (fn byte 0 = Standard, 1 = Fn)."""
+    if mode_fn[:1] == b"\x10":  # shortcut (modifier) map, read only for newer firmware (A2.48): none set
+        return bytes(128)
+    f = json.loads(FACTORY.read_text())
+    return bytes.fromhex(f["fn"] if mode_fn[1:2] == b"\x01" else f["standard"])
 
 
 def handle(iface, data, state):
@@ -63,16 +79,34 @@ def handle(iface, data, state):
     if cmd == 0x09:  # GetSleepSetting: 1 byte
         return [(iface, reply(0x09, state.get("sleep", b"\x00")))]
     if cmd == 0x87:  # GetKeymap(mode, fn): 128 bytes in chunks of 58, 58, 12
-        # Probe: position i holds code (i + 1) so the tool's labels reveal the encoding.
-        km = state.setdefault("keymap", {}).get(bytes(payload), bytes(range(1, 129)))
+        km = state.setdefault("keymap", {}).get(bytes(payload)) or factory_keymap(payload)
         return [(iface, reply(0x87, km[0:58], chunk=0x41)),
                 (iface, reply(0x87, km[58:116], chunk=0x82)),
                 (iface, reply(0x87, km[116:128], chunk=0xC3))]
-    if cmd == 0x86:  # SetKeymap chunk: store, ack each chunk
-        state.setdefault("keymap_write", []).append(bytes(data))
+    if cmd == 0x86:  # SetKeymap: chunk 0x41 = mode, fn + positions 0..56; 0x82 = 57..115; 0xC3 = 116..127
+        if chunk == 0x41:
+            state["write_key"] = bytes(payload[:2])
+            state["write_buf"] = bytearray(payload[2:])
+        else:
+            state.setdefault("write_buf", bytearray()).extend(payload)
+        if chunk == 0xC3 and len(state["write_buf"]) == 128:
+            state.setdefault("keymap", {})[state["write_key"]] = bytes(state["write_buf"])
+            print(f"=== stored keymap mode/fn {state['write_key'].hex()}")
         return [(iface, reply(0x86))]
-    if cmd in (0xE0, 0xE1, 0xE2, 0xE3):  # firmware update: ack only, never "flash" anything
-        print(f"!!! firmware command {cmd:#04x} chunk={chunk:#04x} len={n}")
+    if cmd in (0xE0, 0xE1, 0xE2, 0xE3):  # firmware update: ack and record, never "flash" anything
+        print(f"!!! firmware command {cmd:#04x} chunk={chunk:#04x} len={n} head={bytes(payload[:8]).hex()}")
+        fw = state.setdefault("fw", bytearray())
+        if cmd == 0xE1:
+            state["fw_start"] = bytes(payload)
+            fw.clear()
+        elif cmd == 0xE2:
+            fw.extend(data[4:])  # framing of E2 not known yet: keep everything after "aa aa e2 00"
+            # Static analysis: the tool expects "55 55 e2 00 00 02" + 2 bytes. Guess: echo the block number.
+            return [(iface, reply(0xE2, bytes(data[4:6])))]
+        elif cmd == 0xE3:
+            out = FACTORY.parent / "captures" / f"firmware-upload-{len(fw)}B.bin"
+            out.write_bytes(bytes(fw))
+            print(f"=== wrote {out.name}")
         return [(iface, reply(cmd))]
     print(f"??? unknown command {cmd:#04x}")
     return []
