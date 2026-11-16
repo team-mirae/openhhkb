@@ -124,15 +124,12 @@ fn cmd_remap(
     require_full_support(f)?;
     let fn_layer = matches!(layer, Layer::Fn);
 
-    if !confirm {
-        println!(
-            "DRY RUN — would set {} layer position {} to {:#04x} on {}.\nRe-run with --confirm to write.",
-            if fn_layer { "Fn" } else { "Normal" },
-            position,
-            code,
-            f.id()
+    // Plain keyboard keys write straight through; media/action/internal codes need --confirm.
+    if keymap::is_action_code(code) && !confirm {
+        anyhow::bail!(
+            "{:#04x} is a media/action key — re-run with --confirm to assign it",
+            code
         );
-        return Ok(());
     }
 
     let dev = open(api, f)?;

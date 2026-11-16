@@ -23,7 +23,7 @@ cargo build --release    # -> target/release/openhhkb
 |---|---|
 | `list` | List connected recognised keyboards and their selectors. |
 | `firmware-info --device <sel>` | Model, revision, serial, app/boot firmware, running bank, keyboard mode. |
-| `remap --device <sel> --layer <normal\|fn> --position <0-127> --code <byte> [--confirm]` | Remap one key on the active profile. Without `--confirm`: dry run. |
+| `remap --device <sel> --layer <normal\|fn> --position <0-127> --code <byte> [--confirm]` | Remap one key on the active profile. Plain keys write immediately; media/action keys need `--confirm`. |
 | `load --device <sel> --input <file> [--format auto\|openhhkb-json\|hks] [--confirm]` | Write a keymap file's two layers. Without `--confirm`: validate + dry run. |
 | `export --device <sel> --output <file> [--format openhhkb-json\|hks]` | Read the active keymap to a file. |
 | `firmware-info` / `firmware-flash` / `firmware-recovery` | See below. |
@@ -33,9 +33,13 @@ bottom-right, `69` = top-left Esc (see `../analysis/hhkb-hybrid-jis/`).
 
 ### Writes and safety
 
-Per the repo ground rule, anything that writes to the keyboard needs an explicit flag:
+Per the repo ground rule, writes are gated — but `remap` only prompts for the keys that warrant it:
 
-- `remap` / `load` require `--confirm`; otherwise they dry-run.
+- `remap` writes plain keyboard keys (letters, numbers, punctuation, navigation, F-keys,
+  modifiers, JIS/lang keys) immediately. It requires `--confirm` only for media/action/internal
+  codes (`is_action_code`: `0x00-0x03`, `0x66`, `0x78`, `0xE8-0xED`, and the undecoded internal
+  codes), since those change behaviour in non-obvious ways.
+- `load` requires `--confirm`; otherwise it validates and dry-runs.
 - `load` writes the **keymap layers only** (not DIP/sleep) via the official full apply sequence
   (four layers to the active mode profile, then commit). It refuses a file whose model doesn't
   match the connected keyboard.

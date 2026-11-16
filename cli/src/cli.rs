@@ -28,7 +28,7 @@ pub enum Command {
         device: String,
     },
 
-    /// Remap a single key on the active profile (writes; needs --confirm).
+    /// Remap a single key on the active profile (--confirm only for media/action keys).
     Remap {
         #[arg(long, value_name = "SELECTOR", help = DEVICE_HELP)]
         device: String,
@@ -38,10 +38,10 @@ pub enum Command {
         /// Key position, 0-127 (P = 44; index 0 = bottom-right, 69 = top-left Esc).
         #[arg(long)]
         position: u8,
-        /// New keymap byte, decimal or 0x-hex (e.g. 0x78 = Stop).
+        /// New keymap byte, decimal or 0x-hex (e.g. 0x0b = H, 0x78 = Stop).
         #[arg(long, value_parser = parse_u8)]
         code: u8,
-        /// Required to actually write to the keyboard.
+        /// Required only for media/action keys (plain keyboard keys write without it).
         #[arg(long)]
         confirm: bool,
     },

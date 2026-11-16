@@ -7,6 +7,23 @@ use std::path::Path;
 
 use crate::cli::Format;
 
+/// Whether a keymap byte is a media/action/internal code (as opposed to a normal keyboard key:
+/// letter, number, punctuation, navigation, F-key, modifier, JIS/lang key, …).
+///
+/// These are the firmware's special-cased values (see analysis/firmware/hybrid-keycodes.md):
+/// internal Fn/layer/disable, the consumer/system keys, and the undecoded internal codes. Remapping
+/// a key to one of these changes behaviour in non-obvious ways, so the CLI asks for --confirm;
+/// everything else is ordinary keyboard output and writes without it.
+pub fn is_action_code(code: u8) -> bool {
+    matches!(
+        code,
+        0x00..=0x03            // no-key / Fn / fixed-Fn / layer
+        | 0x66 | 0x78          // Power, Stop (routed to the consumer report)
+        | 0xE8..=0xED          // Vol-, Vol+, Mute, Eject, Bright-, Bright+
+        | 0xAA | 0xC7 | 0xD0   // undecoded internal codes
+    )
+}
+
 /// Format-neutral keymap profile.
 pub struct Profile {
     pub model: String,
