@@ -90,6 +90,9 @@ static void declare(char **f, int nf) {
     setStr(p, CFSTR(kIOHIDProductKey), f[6]);
     setStr(p, CFSTR(kIOHIDManufacturerKey), f[7]);
     setStr(p, CFSTR(kIOHIDTransportKey), "USB");
+    /* So hidapi (and anything matching on USB interface number) sees this as HID interface <idx>. */
+    setNum(p, CFSTR("bInterfaceClass"), 3);   /* HID class */
+    setNum(p, CFSTR("bInterfaceNumber"), idx);
     uint8_t buf[1024];
     CFIndex n = unhex(f[8], buf, sizeof buf);
     CFDataRef d = CFDataCreate(NULL, buf, n);
