@@ -25,15 +25,29 @@ needs no USB re-enumeration — see captures/).
 
 | Property | Value | Source |
 |---|---|---|
-| Container | `"MAIN"` magic + header, then the image at offset `0x10` | `4d 41 49 4e 00 00 00 90 ...` |
-| Core | Cortex-**M3/M4 class** (not M0) | large vector table (~80+ IRQs) |
-| Inner reset | `0x080086C1` | app above ~`0x08008000` (≈32 KB bootloader) |
-| Inner SP | `0x20000800` | (small; re-check — padding may inflate the vector count) |
+| Container | `"MAIN"` magic + 16-byte header, then the image at offset `0x10` | see header below |
+| Core | Cortex-**M4 class** (not M0) | 104-entry vector table = 16 core + **88 IRQs** |
+| Family | likely **STM32F3** | GPIO referenced at `0x48000000` (AHB2, F3/F0/L0) **and** M4 + 88 IRQs + RCC `0x40021000` + USB-FS `0x40005C00` → F3 (M4F) fits; F0/L0 are M0/M0+, excluded by the IRQ count |
+| Inner reset | `0x080086C1` | app at ~`0x08008000` (≈32 KB bootloader below) |
+| Inner SP | `0x20000800` | low; re-check against the real part's RAM map |
 | Update framing | `F7`/`F6` with complement checksums, on `0xFF00/0x01` in **boot mode** | static analysis of the Studio tool |
 | Separate firmwares | main MCU, Bluetooth, touchpad | `commandGet{Boot,BT,TP}Version`, `commandFirmupForBTAndTouchPad` |
 
-Studio needs its own pass: parse the `MAIN` header fields, confirm the MCU, and the boot-mode handshake
-(`0B 02` → re-enumerate as the `0xFF00/0x01` 64-byte bootloader, which our emulator does not do yet).
+### `MAIN` 16-byte header (both images)
+
+| Offset | JP (`PD-ID120_B209`) | US (`PD-ID100_B009`) | Guess |
+|---|---|---|---|
+| 0x00 | `"MAIN"` | `"MAIN"` | magic |
+| 0x04 | `0x90000000` | `0x90000000` | fixed (flags / format) |
+| 0x08 | `0x2402e7b5` | `0x2402555d` | per-image, high `0x2402` fixed — checksum or signature |
+| 0x0c | `0x00016b52` | `0x00016a4e` | per-image, high `0x0001` fixed — length/CRC-like |
+
+So `0x08`/`0x0c` are the per-build varying fields (checksum + length/CRC), the kind the bootloader likely verifies.
+
+Studio next steps: confirm STM32F3 against the board, work out the `0x08`/`0x0c` header fields, and the boot-mode
+handshake (`0B 02` → re-enumerate as the `0xFF00/0x01` 64-byte bootloader + the `F7`/`F6` framing), which our
+emulator does not do yet. Studio is a separate, larger firmware effort than the Hybrid (M4 vs M0, and the emulator
+needs interface hot-swap to capture its update).
 
 ## Open items before any Tier B image can be built or flashed
 1. Confirm the exact MCU part from the physical PCB (silkscreen) — gates linker script, flash size, USB clock.
