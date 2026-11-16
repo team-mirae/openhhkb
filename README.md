@@ -17,3 +17,12 @@ This project is based on reverse engineering of the keyboards' configuration pro
 ## License
 
 [CC0 1.0 Universal](LICENSE) — dedicated to the public domain.
+
+## Official tools
+
+For everyday use, use the official remap tool:
+
+- **HHKB Studio:** [HHKB Studio Keymap Tool](https://happyhackingkb.com/download/) ([manual](https://happyhackingkb.com/manual/studio/ug-us/en/ug/topic/keymaptool.html))
+- **HHKB Professional Hybrid Type-S:** [HHKB Professional Keymap Tool](https://happyhackingkb.com/download/)
+
+Both are available for Windows and macOS on the official download page. The two keyboards use different tools.
