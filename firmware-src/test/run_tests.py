@@ -145,6 +145,39 @@ def test_firmware(core):
     check(got == f, f"reassembled image == vendor file ({len(got)}/{len(f)} bytes, {block} blocks)")
 
 
+def test_descriptors():
+    print("[5] USB descriptor consistency")
+    import re
+    hdr = (ROOT / "firmware-src/src/usb_descriptors.h").read_text()
+    arr = {}
+    for m in re.finditer(r"usb_\w+|hid_report\d", hdr):
+        pass
+    for name in ("usb_device_desc", "usb_config_desc", "hid_report0", "hid_report1", "hid_report2"):
+        m = re.search(name + r"\[\d+\] = \{([0-9,]+)\}", hdr)
+        arr[name] = bytes(int(x) for x in m.group(1).split(","))
+    dev, cfg = arr["usb_device_desc"], arr["usb_config_desc"]
+    check(dev[8] | (dev[9] << 8) == 0x04FE and dev[10] | (dev[11] << 8) == 0x0022, "device VID:PID 04fe:0022")
+    check((cfg[2] | (cfg[3] << 8)) == len(cfg), "config wTotalLength == actual length")
+    # report descriptors match the captured .bin
+    for i in (0, 1, 2):
+        b = (ROOT / f"analysis/hhkb-hybrid-jis/report-descriptors/input{i}.bin").read_bytes()
+        check(arr[f"hid_report{i}"] == b, f"hid_report{i} matches captured descriptor")
+    # walk config: each HID descriptor's wDescriptorLength == its report length
+    i = 9
+    cur_iface = None
+    ok = True
+    while i < len(cfg):
+        blen, btype = cfg[i], cfg[i + 1]
+        if btype == 0x04:
+            cur_iface = cfg[i + 2]
+        elif btype == 0x21:
+            wlen = cfg[i + 7] | (cfg[i + 8] << 8)
+            if wlen != len(arr[f"hid_report{cur_iface}"]):
+                ok = False
+        i += blen
+    check(ok, "HID wDescriptorLength matches each report descriptor")
+
+
 def main():
     if not CLI.exists():
         print("build hhkb_cli first (make -C firmware-src test)"); sys.exit(2)
@@ -153,6 +186,7 @@ def main():
     test_roundtrip(core)
     test_default(core)
     test_firmware(core)
+    test_descriptors()
     print()
     if fails:
         print(f"{len(fails)} FAILURE(S):")

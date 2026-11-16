@@ -15,14 +15,16 @@ TCC := $(CROSS)gcc
 TOBJCOPY := $(CROSS)objcopy
 TSIZE := $(CROSS)size
 MCUFLAGS := -mcpu=cortex-m0 -mthumb
-TCFLAGS := $(MCUFLAGS) -std=c11 -Os -ffreestanding -ffunction-sections -fdata-sections \
+TCFLAGS := $(MCUFLAGS) -std=c11 -Os -ffreestanding -fno-jump-tables -ffunction-sections -fdata-sections \
            -Wall -Wextra -I$(SRC) -Itarget
 TLDFLAGS := $(MCUFLAGS) -T target/stm32f072.ld -nostdlib -Wl,--gc-sections -Wl,-Map,$(BUILD)/hhkb_fw.map
-FW_SRC := $(SRC)/hhkb_proto.c target/main.c target/startup_stm32f0.c target/flash_stm32f0.c target/board_stub.c
+FW_SRC := $(SRC)/hhkb_proto.c target/main.c target/startup_stm32f0.c target/flash_stm32f0.c \
+          target/usb_stm32f0.c target/board_stub.c
 
 .PHONY: test gen clean fw qemu
 gen:
 	python3 gen/make_default_keymap.py
+	python3 gen/make_descriptors.py
 
 $(BUILD)/hhkb_cli: $(SRC)/hhkb_proto.c $(SRC)/hhkb_proto.h $(SRC)/default_keymap.h test/hhkb_cli.c | $(BUILD)
 	$(HOSTCC) $(HOSTCFLAGS) $(SRC)/hhkb_proto.c test/hhkb_cli.c -o $@
@@ -34,7 +36,7 @@ test: $(BUILD)/hhkb_cli
 	python3 test/run_tests.py
 
 fw: $(BUILD)/hhkb_fw.bin
-$(BUILD)/hhkb_fw.bin: $(FW_SRC) target/stm32f072.ld $(SRC)/hhkb_proto.h target/hhkb_board.h src/default_keymap.h | $(BUILD)
+$(BUILD)/hhkb_fw.bin: $(FW_SRC) target/stm32f072.ld $(SRC)/hhkb_proto.h target/hhkb_board.h src/default_keymap.h src/usb_descriptors.h | $(BUILD)
 	$(TCC) $(TCFLAGS) $(TLDFLAGS) $(FW_SRC) -o $(BUILD)/hhkb_fw.elf
 	$(TOBJCOPY) -O binary $(BUILD)/hhkb_fw.elf $@
 	$(TSIZE) $(BUILD)/hhkb_fw.elf

@@ -19,8 +19,8 @@ in the git-ignored `firmware/` directory and are only used as test fixtures.
 | Host test suite (`test/`) | done — replays captures, round-trips keymaps, reassembles the vendor image |
 | STM32F0 target build (startup, linker, image) | done — `make fw` builds `hhkb_fw.bin` at `0x08010000` |
 | Core verified on real Cortex-M0 (QEMU) | done — `make qemu` runs the core under `qemu-system-arm` |
-| STM32F0 USB FS device stack + HID | TODO (board layer stubbed) |
-| Topre matrix scanning (so it can type) | blocked — needs the physical board; see hardware-id.md |
+| STM32F0 USB FS device stack + HID | written + builds; descriptors validated vs our scan. **NOT hardware-tested** (no F0 USB model in QEMU, no board) |
+| Matrix scanning (so it can type) | not required for recovery — the ASDF→HHKB marker shows in the tool's keymap view without typing |
 | `.hfb` header checksum (so the stock bootloader accepts our image) | TODO (open item) |
 | Studio (different MCU + `MAIN` container + boot-mode) | not started |
 
