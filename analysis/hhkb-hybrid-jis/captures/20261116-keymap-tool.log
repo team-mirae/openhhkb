@@ -1,0 +1,41 @@
+20261116 01:31:40 | [INFO] AppDelegate.swift [91] applicationDidFinishLaunching(_:): AppVersion: 2.0.1.0
+20261116 01:31:41 | [INFO] HHKBDriver.swift [139] command01NotifyApplicationState(state:): 0x01 ok
+20261116 01:31:41 | [INFO] HHKBDriver.swift [160] command02GetKeyboardInformation(): 0x02 ok
+20261116 01:31:41 | [INFO] HHKBDriver.swift [170] command02GetKeyboardInformation(): TypeNumber: PD-KB820BS
+20261116 01:31:41 | [INFO] HHKBDriver.swift [171] command02GetKeyboardInformation(): Revision: A
+20261116 01:31:41 | [INFO] HHKBDriver.swift [172] command02GetKeyboardInformation(): Serial: VHHKB0000000001
+20261116 01:31:41 | [INFO] HHKBDriver.swift [173] command02GetKeyboardInformation(): AppVersion: 10.00
+20261116 01:31:41 | [INFO] HHKBDriver.swift [174] command02GetKeyboardInformation(): BootVersion: 10.00
+20261116 01:31:41 | [INFO] HHKBDriver.swift [175] command02GetKeyboardInformation(): RunningFirmwareState: 0
+20261116 01:31:41 | [INFO] HHKBDriver.swift [220] command05GetDipswInformation(): 0x05 ok
+20261116 01:31:41 | [INFO] HHKBDriver.swift [503] command87GetKeymap(mode:fnKey:isShortcut:): 0x87 ok
+20261116 01:31:41 | [INFO] HHKBDriver.swift [503] command87GetKeymap(mode:fnKey:isShortcut:): 0x87 ok
+20261116 01:31:41 | [INFO] HHKBDriver.swift [252] command06GetKeyboardMode(): 0x06 ok
+20261116 01:31:41 | [INFO] HHKBDriver.swift [139] command01NotifyApplicationState(state:): 0x01 ok
+20261116 01:31:41 | [INFO] UpdateChecker.swift [27] init(typeNumber:updateUrl:connectionTimeout:): begin
+20261116 01:31:41 | [INFO] UpdateChecker.swift [36] init(typeNumber:updateUrl:connectionTimeout:): end
+20261116 01:31:41 | [INFO] UpdateChecker.swift [44] getLatestVersion(onSuccess:onFailure:): begin
+20261116 01:31:41 | [INFO] UpdateChecker.swift [122] getLatestVersion(onSuccess:onFailure:): end
+20261116 01:31:41 | [INFO] UpdateChecker.swift [127] urlSession(_:task:didReceive:completionHandler:): begin
+20261116 01:31:41 | [INFO] UpdateChecker.swift [129] urlSession(_:task:didReceive:completionHandler:): challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust
+20261116 01:32:48 | [INFO] UserNotification.swift [28] registerNotificationCategories(): Notifications are not allowed for this application
+20261116 01:32:48 | [INFO] AppDelegate.swift [91] applicationDidFinishLaunching(_:): AppVersion: 2.0.1.0
+20261116 01:32:49 | [INFO] HHKBDriver.swift [139] command01NotifyApplicationState(state:): 0x01 ok
+20261116 01:32:49 | [INFO] HHKBDriver.swift [160] command02GetKeyboardInformation(): 0x02 ok
+20261116 01:32:49 | [INFO] HHKBDriver.swift [170] command02GetKeyboardInformation(): TypeNumber: PD-KB820BS
+20261116 01:32:49 | [INFO] HHKBDriver.swift [171] command02GetKeyboardInformation(): Revision: A
+20261116 01:32:49 | [INFO] HHKBDriver.swift [172] command02GetKeyboardInformation(): Serial: VHHKB0000000001
+20261116 01:32:49 | [INFO] HHKBDriver.swift [173] command02GetKeyboardInformation(): AppVersion: 10.00
+20261116 01:32:49 | [INFO] HHKBDriver.swift [174] command02GetKeyboardInformation(): BootVersion: 10.00
+20261116 01:32:49 | [INFO] HHKBDriver.swift [175] command02GetKeyboardInformation(): RunningFirmwareState: 0
+20261116 01:32:49 | [INFO] HHKBDriver.swift [220] command05GetDipswInformation(): 0x05 ok
+20261116 01:32:49 | [INFO] HHKBDriver.swift [503] command87GetKeymap(mode:fnKey:isShortcut:): 0x87 ok
+20261116 01:32:49 | [INFO] HHKBDriver.swift [503] command87GetKeymap(mode:fnKey:isShortcut:): 0x87 ok
+20261116 01:32:49 | [INFO] HHKBDriver.swift [252] command06GetKeyboardMode(): 0x06 ok
+20261116 01:32:49 | [INFO] HHKBDriver.swift [139] command01NotifyApplicationState(state:): 0x01 ok
+20261116 01:32:49 | [INFO] UpdateChecker.swift [27] init(typeNumber:updateUrl:connectionTimeout:): begin
+20261116 01:32:49 | [INFO] UpdateChecker.swift [36] init(typeNumber:updateUrl:connectionTimeout:): end
+20261116 01:32:49 | [INFO] UpdateChecker.swift [44] getLatestVersion(onSuccess:onFailure:): begin
+20261116 01:32:49 | [INFO] UpdateChecker.swift [122] getLatestVersion(onSuccess:onFailure:): end
+20261116 01:32:49 | [INFO] UpdateChecker.swift [127] urlSession(_:task:didReceive:completionHandler:): begin
+20261116 01:32:49 | [INFO] UpdateChecker.swift [129] urlSession(_:task:didReceive:completionHandler:): challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust

@@ -1,0 +1,16 @@
+{
+  "_source": "analysis/hhkb-studio-jis (Linux sysfs scan, 2026-11-16)",
+  "vid": "0x04fe",
+  "pid": "0x0015",
+  "version": "0x0211",
+  "location": "0x0bad1000",
+  "product": "HHKB-Studio",
+  "manufacturer": "PFU Limited",
+  "interfaces": [
+    {"n": 0, "descriptor": "analysis/hhkb-studio-jis/report-descriptors/input0.bin", "role": "boot keyboard"},
+    {"n": 1, "descriptor": "analysis/hhkb-studio-jis/report-descriptors/input1.bin", "role": "raw HID 0xFF60/0x61, keymap tool"},
+    {"n": 2, "descriptor": "analysis/hhkb-studio-jis/report-descriptors/input2.bin", "role": "mouse"},
+    {"n": 3, "descriptor": "analysis/hhkb-studio-jis/report-descriptors/input3.bin", "role": "system/consumer"},
+    {"n": 4, "descriptor": "analysis/hhkb-studio-jis/report-descriptors/input4.bin", "role": "console 0xFF31/0x74"}
+  ]
+}

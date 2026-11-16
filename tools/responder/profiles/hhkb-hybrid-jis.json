@@ -1,0 +1,14 @@
+{
+  "_source": "analysis/hhkb-hybrid-jis (macOS IORegistry scan, 2026-11-16)",
+  "vid": "0x04fe",
+  "pid": "0x0022",
+  "version": "0x0001",
+  "location": "0x0bad2000",
+  "product": "HHKB-Hybrid",
+  "manufacturer": "PFU Limited",
+  "interfaces": [
+    {"n": 0, "descriptor": "analysis/hhkb-hybrid-jis/report-descriptors/input0.bin", "role": "boot keyboard"},
+    {"n": 1, "descriptor": "analysis/hhkb-hybrid-jis/report-descriptors/input1.bin", "role": "multimedia + NKRO"},
+    {"n": 2, "descriptor": "analysis/hhkb-hybrid-jis/report-descriptors/input2.bin", "role": "vendor 0xFF00/0x01, keymap tool"}
+  ]
+}
