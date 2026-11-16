@@ -65,3 +65,20 @@ returns an old version not starting with "B". With these, CONNECT proceeds throu
 read range (`romRead` 0x07–0x3f) before erroring in a later config section. Reaching the firmware-update button
 needs the rest of Topre's config read map emulated — a separate effort, and not required to establish the
 firmware/CRC result above.
+
+## Confirmed against the real keyboard (logging passthrough)
+
+`tools/passthrough/` bridges the REAL keyboard (on the host) to a virtual device CONNECT opens in the VM, logging
+every report (`hidbridge.c` opens the real vendor interface via hidapi; `passthrough.py` relays, with writes and
+firmware-flash commands blocked by default). With it, **CONNECT fully connected to the real X1P** and we captured
+the genuine config protocol end to end: device name `X1PC11`, firmware `A1.13`, the FW-CRC read at ROM addr 191
+(`0x6a80`), and the keymap/APC EEPROM layout.
+
+Firmware-update gating (from CONNECT's `config.json`): the latest `X1P` firmware is version `113` (A1.13), and the
+real keyboard is already `113`, so `isFirmwareVersionLatest` is true and the update menu stays disabled — which is
+why an update can't be triggered. Reporting an older version (the passthrough can rewrite the `0x02` reply to
+A1.00) re-enables it; holding Shift in CONNECT also exposes a manual-update item. The firmware flash itself stays
+blocked by the passthrough guard, so the real keyboard is never written.
+
+Note: repeatedly opening/closing the real keyboard's vendor interface makes macOS's `hid_open` flaky until the
+keyboard is replugged; this is a device/OS quirk, not a protocol issue.

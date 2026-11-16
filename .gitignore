@@ -4,3 +4,7 @@ analysis/**/firmware-upload-*.bin
 firmware/*
 !firmware/README.md
 firmware-src/build/
+
+# Passthrough captures contain the user's real keyboard config
+analysis/**/*-passthrough.jsonl
+tools/passthrough/hidbridge
