@@ -55,3 +55,13 @@ UI handshake.
 
 `tools/responder/profiles/realforce-x1p-jp-tkl.json` and `rules/realforce-x1p-jp-tkl.py` bring up the virtual X1P
 and answer CONNECT's early commands. The CONNECT app bundle is third-party and is not vendored here.
+
+## Update: connect handshake partially emulated
+
+Decoding more of CONNECT's connect flow, the rules now answer its early reads well enough to get much further:
+`romRead(0)` returns the device name + flags (byte7 bit7 clear, or it rejects as a "setting limit device");
+`romRead(191)` must return a non-zero FW CRC in bytes[2:3] (else "The CRC for the FW is zero"); `getDeviceInfo`
+returns an old version not starting with "B". With these, CONNECT proceeds through the whole keymap/macro/matrix
+read range (`romRead` 0x07–0x3f) before erroring in a later config section. Reaching the firmware-update button
+needs the rest of Topre's config read map emulated — a separate effort, and not required to establish the
+firmware/CRC result above.

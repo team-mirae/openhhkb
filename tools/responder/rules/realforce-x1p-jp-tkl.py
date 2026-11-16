@@ -41,7 +41,19 @@ def handle(iface, data, state):
         return [(iface, reply(cmd))]
     if cmd == 0x02:  # getDeviceInfo
         return [(iface, reply(cmd, device_info()))]
-    if cmd in (0xC1, 0xC3, 0xC7, 0xC0):  # romRead / ramRead / romRead2 / request: return zero config bytes
+    if cmd in (0xC1, 0xC7):  # romRead(addr): address-specific config bytes (decoded from CONNECT's connect flow)
+        buf = bytearray(20)
+        if param == 0:
+            buf[0:4] = b"R30H"       # device name (bytes 0..6, up to first NUL)
+            buf[6] = 0x01            # low nibble = profile/layer count
+            buf[7] = 0x00            # bit7 clear -> not a "setting limit device"
+        elif param == 191:
+            buf[2] = 0x12            # bytes 2:3 = running-FW CRC; must be non-zero
+            buf[3] = 0x34
+            buf[7] = 0x01            # version/config byte the UI reads
+        # all other addresses: zeros (blank keymap/macros) -> UI shows defaults
+        return [(iface, reply(cmd, bytes(buf)))]
+    if cmd in (0xC3, 0xC0):  # ramRead / request: zeros
         return [(iface, reply(cmd, bytes(16)))]
     if cmd in (0xC2, 0xC8):  # romWrite / romWrite2: ack
         return [(iface, reply(cmd))]
