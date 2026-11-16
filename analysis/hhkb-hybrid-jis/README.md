@@ -90,6 +90,23 @@ likely runs Topre's firmware/USB stack, and its vendor protocol may match REALFO
 - A separate paired-but-disconnected Bluetooth device `HHKB-BT` (VID `0x04FE`, PID `0x0202`, firmware 1.1.6)
   is known to macOS. It was not checked whether it is this same unit.
 
+## Rescan with Karabiner-Elements ignoring the Hybrid
+
+`ioreg-usb-tree-karabiner-off.txt` is a second scan taken after Karabiner was set to ignore this device
+(`"ignore": true` for 04fe:0022 in `karabiner.json`). Compared with the first scan:
+
+- **Device, interfaces, descriptors, country code: identical.** Karabiner does not affect what the keyboard reports.
+- **Only the host-side user clients changed** (IOHIDLibUserClient `DebugState`):
+
+| Client | Before | After |
+|---|---|---|
+| Karabiner-Core-Service | opened, the device seized | **not opened** |
+| BadaIME, Discord, Discord Helper | opened, `ClientSeized=Yes` (locked out by Karabiner's seize) | opened, `ClientSeized=No` |
+
+So with Karabiner on, it took the Hybrid exclusively and other apps only saw Karabiner's virtual keyboard. That
+matters later: an exclusive seize can also stop the official keymap tool or our own tooling from opening the device.
+Keep Karabiner off for this keyboard during protocol work.
+
 ## Next steps (proposed, not done)
 
 1. Get endpoint descriptors without sending anything new, e.g. on Linux from sysfs (`descriptors` file), as done for
